@@ -21,45 +21,42 @@ THE SOFTWARE.
 */
 package net.practicaldeveloper.phonegap.plugins;
 
-import org.apache.cordova.api.PluginResult.Status;
 import org.json.JSONArray;
 import org.json.JSONException;
-
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.telephony.SmsManager;
-
-import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 
-public class SmsPlugin extends Plugin {
+public class SmsPlugin extends CordovaPlugin {
 	public final String ACTION_SEND_SMS = "SendSMS";
-	
+
 	@Override
-	public PluginResult execute(String action, JSONArray arg1, String callbackId) {
-		PluginResult result = new PluginResult(Status.INVALID_ACTION);
-		
+	public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
 		if (action.equals(ACTION_SEND_SMS)) {
 			try {
-				String phoneNumber = arg1.getString(0);
-				String message = arg1.getString(1);
+				String phoneNumber = args.getString(0);
+				String message = args.getString(1);
 				sendSMS(phoneNumber, message);
-				result = new PluginResult(Status.OK);
+				callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
+				return true;
 			}
 			catch (JSONException ex) {
-				result = new PluginResult(Status.JSON_EXCEPTION, ex.getMessage());
+				callbackContext.sendPluginResult(new PluginResult( PluginResult.Status.JSON_EXCEPTION));
 			}			
 		}
-		
-		return result;
+		return false;
 	}
-
+	
+	
 	private void sendSMS(String phoneNumber, String message) {
 		SmsManager manager = SmsManager.getDefault();
-		
-        PendingIntent sentIntent = PendingIntent.getActivity(this.ctx.getContext(), 0, new Intent(), 0);  
-		
+
+        PendingIntent sentIntent = PendingIntent.getActivity(this.cordova.getActivity(), 0, new Intent(), 0);  
+
 		manager.sendTextMessage(phoneNumber, null, message, sentIntent, null);
 	}
-
+	
 }
